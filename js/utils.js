@@ -16,7 +16,6 @@ export const getRandomColorPairs = (count) => {
 
   for (let index = 0; index < count; index++) {
     const color = randomColor({ luminosity: 'dark', hue: hueList[index] })
-    console.log(color)
     colorsList.push(color)
   }
   colorsList = [...colorsList, ...colorsList]
