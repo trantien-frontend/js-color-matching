@@ -11,13 +11,13 @@ import {
   getParentColorElementList,
   getColorElementListActive,
   getPlayAgainButton,
+  getColorBackground,
 } from './selectors.js'
 // Global variables
 let selections = []
 let gameState = GAME_STATUS.PLAYING
 let countTimeOut = createCountTimeOut({
-  // second: GAME_TIME,
-  second: 5,
+  second: GAME_TIME,
   onChange: handleTimerChange,
   onFinish: handleTimerFinish,
 })
@@ -71,9 +71,11 @@ function handleClickEvent(liElement) {
 
   if (hasSameColor) {
     const isEndGame = getColorElementListActive().length === 0
+    getColorBackground().style.backgroundColor = fistColor
     if (isEndGame) {
       showPlayAgainButton()
       setTimmerText('YOU WIN !!!🌸🌸🌸')
+      countTimeOut.clear()
       gameState = GAME_STATUS.FINISHED
       return
     }
@@ -106,7 +108,6 @@ function attachEventColorList() {
 }
 function resetGame() {
   // reset variables local
-  gameState = GAME_STATUS.PLAYING
   selections = []
   initBindColor()
   // rest Dom
@@ -120,6 +121,7 @@ function resetGame() {
   // - rest TimmerText
   setTimmerText('')
   startTimer()
+  gameState = GAME_STATUS.PLAYING
 }
 function attachEventReplayClick() {
   const playAgainButton = getPlayAgainButton()
