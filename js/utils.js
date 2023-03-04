@@ -1,3 +1,5 @@
+import { getPlayAgainButton, getTimerElement } from './selectors.js'
+
 function shuffele(arr) {
   for (let index = arr.length - 1; index > 0; index--) {
     const randomIndex = Math.floor(Math.random() * index)
@@ -22,4 +24,42 @@ export const getRandomColorPairs = (count) => {
   shuffele(colorsList)
 
   return colorsList
+}
+
+export function showPlayAgainButton() {
+  const playAgainButton = getPlayAgainButton()
+  playAgainButton.classList.add('show')
+}
+export function HidePlayAgainButton() {
+  const playAgainButton = getPlayAgainButton()
+  playAgainButton.classList.remove('show')
+}
+export function setTimmerText(text) {
+  const timerText = getTimerElement()
+  if (timerText) timerText.textContent = text
+}
+
+export function createCountTimeOut({ second, onChange, onFinish }) {
+  let idInterval = null
+  function start() {
+    let currentSecond = second
+    clear()
+    idInterval = setInterval(() => {
+      // if (onChange) onChange(currentSecond)
+      onChange?.(currentSecond)
+      currentSecond -= 1
+      if (currentSecond < 0) {
+        clear()
+        onFinish?.()
+      }
+    }, 1000)
+  }
+  function clear() {
+    clearInterval(idInterval)
+  }
+
+  return {
+    start,
+    clear,
+  }
 }

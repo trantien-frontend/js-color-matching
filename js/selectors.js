@@ -16,3 +16,6 @@ export function getColorBackground() {
 export function getParentColorElementList() {
   return document.getElementById('colorList')
 }
+export function getColorElementListActive() {
+  return document.querySelectorAll('#colorList > li:not(.active)')
+}

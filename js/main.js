@@ -1,9 +1,38 @@
-import { GAME_STATUS } from './constants.js'
-import { getRandomColorPairs } from './utils.js'
-import { getColorElementList, getParentColorElementList } from './selectors.js'
+import { GAME_STATUS, GAME_TIME } from './constants.js'
+import {
+  getRandomColorPairs,
+  showPlayAgainButton,
+  setTimmerText,
+  HidePlayAgainButton,
+  createCountTimeOut,
+} from './utils.js'
+import {
+  getColorElementList,
+  getParentColorElementList,
+  getColorElementListActive,
+  getPlayAgainButton,
+} from './selectors.js'
 // Global variables
 let selections = []
 let gameState = GAME_STATUS.PLAYING
+let countTimeOut = createCountTimeOut({
+  // second: GAME_TIME,
+  second: 5,
+  onChange: handleTimerChange,
+  onFinish: handleTimerFinish,
+})
+
+function handleTimerChange(second) {
+  const currentSecond = `0${second}`.slice(-2)
+  setTimmerText(currentSecond)
+}
+function handleTimerFinish() {
+  console.log('Finish')
+  setTimmerText('Game Over!!🔄🔄🔄')
+  showPlayAgainButton()
+  gameState = GAME_STATUS.FINISHED
+}
+
 // TODOs
 // 1. Generating colors using https://github.com/davidmerfield/randomColor
 // 2. Attach item click for all li elements
@@ -24,12 +53,13 @@ function initBindColor() {
 }
 function handleClickEvent(liElement) {
   const gameStatusCurrent = gameState === GAME_STATUS.BLOCKING || gameState === GAME_STATUS.FINISHED
-  if (!liElement || gameStatusCurrent) return
-  liElement.classList.add('active')
+  const isClicked = liElement.className.includes('active')
+  if (!liElement || isClicked || gameStatusCurrent) return
 
+  liElement.classList.add('active')
   // check same color
   selections.push(liElement)
-  console.log('li:', liElement)
+
   if (selections.length < 2) return
 
   const fistColor = selections[0].dataset.color
@@ -37,21 +67,31 @@ function handleClickEvent(liElement) {
 
   const hasSameColor = fistColor === secondColor
 
+  gameState = GAME_STATUS.BLOCKING
+
   if (hasSameColor) {
+    const isEndGame = getColorElementListActive().length === 0
+    if (isEndGame) {
+      showPlayAgainButton()
+      setTimmerText('YOU WIN !!!🌸🌸🌸')
+      gameState = GAME_STATUS.FINISHED
+      return
+    }
+
     selections = []
+    gameState = GAME_STATUS.PLAYING
     return
   }
 
-  gameState = GAME_STATUS.BLOCKING
   // remove active
   setTimeout(() => {
-    console.log('timeOut')
     selections[0].classList.remove('active')
     selections[1].classList.remove('active')
 
     selections = []
-
-    gameState = GAME_STATUS.PLAYING
+    if (gameState !== GAME_STATUS.FINISHED) {
+      gameState = GAME_STATUS.PLAYING
+    }
   }, 500)
 }
 function attachEventColorList() {
@@ -64,8 +104,34 @@ function attachEventColorList() {
     handleClickEvent(target)
   })
 }
-// main
+function resetGame() {
+  // reset variables local
+  gameState = GAME_STATUS.PLAYING
+  selections = []
+  initBindColor()
+  // rest Dom
+  // - Hide Button
+  HidePlayAgainButton()
+  // - remove active ElementColorList
+  const colorElementList = getColorElementList()
+  for (const colorElement of colorElementList) {
+    colorElement.className = ''
+  }
+  // - rest TimmerText
+  setTimmerText('')
+  startTimer()
+}
+function attachEventReplayClick() {
+  const playAgainButton = getPlayAgainButton()
+  playAgainButton.addEventListener('click', () => resetGame())
+}
+function startTimer() {
+  countTimeOut.start()
+}
+
 ;(() => {
   initBindColor()
   attachEventColorList()
+  attachEventReplayClick()
+  startTimer()
 })()
